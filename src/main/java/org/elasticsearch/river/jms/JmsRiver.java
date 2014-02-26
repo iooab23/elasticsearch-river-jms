@@ -107,6 +107,8 @@ public class JmsRiver extends AbstractRiverComponent implements River {
         this.client = client;
         this.defaultConsumerName = "jms_elasticsearch_river_" + riverName().name();
 
+        logger.info("Configuring River");
+
         if (settings.settings().containsKey("jms")) {
             Map<String, Object> jmsSettings = (Map<String, Object>) settings.settings().get("jms");
             user = XContentMapValues.nodeStringValue(jmsSettings.get("user"), defaultUser);
@@ -156,10 +158,12 @@ public class JmsRiver extends AbstractRiverComponent implements River {
             }
 
             ordered = XContentMapValues.nodeBooleanValue(indexSettings.get("ordered"), false);
+            defaultIndex = XContentMapValues.nodeStringValue(indexSettings.get("_index"), null);
+            defaultType = XContentMapValues.nodeStringValue(indexSettings.get("_type"), null);
+            defaultAction = XContentMapValues.nodeStringValue(indexSettings.get("_action"), null);
 
-            defaultIndex = (String) indexSettings.get("index");
-            defaultType = (String) indexSettings.get("type");
-            defaultAction = (String) indexSettings.get("action");
+            logger.info("Index Setting: Action:{} Index:{} Type:{}", defaultAction, defaultIndex, defaultType);
+
         } else {
             bulkSize = 100;
             bulkTimeout = TimeValue.timeValueMillis(10);
@@ -373,8 +377,8 @@ public class JmsRiver extends AbstractRiverComponent implements River {
                             }
                         }
 
-                        if (logger.isTraceEnabled()) {
-                            logger.trace("executing bulk with [{}] actions", bulkRequestBuilder.numberOfActions());
+                        if (logger.isInfoEnabled()) {
+                            logger.info("executing bulk with [{}] actions", bulkRequestBuilder.numberOfActions());
                         }
 
                         if (ordered) {
@@ -384,6 +388,8 @@ public class JmsRiver extends AbstractRiverComponent implements River {
                                 if (response.hasFailures()) {
                                     // TODO write to exception queue?
                                     logger.warn("failed to execute" + response.buildFailureMessage());
+                                } else {
+                                    logger.info("Requests Processed successfully");
                                 }
 
                                 for (Message msg : messages) {
@@ -399,6 +405,8 @@ public class JmsRiver extends AbstractRiverComponent implements River {
                                     if (response.hasFailures()) {
                                         // TODO write to exception queue?
                                         logger.warn("failed to execute" + response.buildFailureMessage());
+                                    } else {
+                                        logger.info("Requests Processed successfully");
                                     }
 
                                     for (Message message : messages) {
@@ -426,7 +434,7 @@ public class JmsRiver extends AbstractRiverComponent implements River {
                 if (defaultAction.equals("index")) {
                     addIndexRequest(msgContent, bulkRequestBuilder);
                 } else {
-                    throw new RuntimeException("Unknown action in index settings");
+                    throw new RuntimeException("Unknown action for _index settings:" + defaultAction);
                 }
             } else {
                 bulkRequestBuilder.add(msgContent, 0, msgContent.length, false);
@@ -444,7 +452,7 @@ public class JmsRiver extends AbstractRiverComponent implements River {
                     logger.info("add index request [{}]", request);
                 }
             } else {
-                throw new RuntimeException("index and type is required for action specification");
+                throw new RuntimeException("_index and _type is required for this _action specification");
             }
         }
 

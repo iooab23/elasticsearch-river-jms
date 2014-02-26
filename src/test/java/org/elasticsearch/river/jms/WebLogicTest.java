@@ -1,18 +1,18 @@
 /*
  * Licensed to ElasticSearch under one
- * or more contributor license agreements.  See the NOTICE file
+ * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership. ElasticSearch licenses this
  * file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
+ * with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
+ * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
  */
@@ -35,6 +35,7 @@ import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -42,11 +43,11 @@ import org.junit.Test;
  */
 public class WebLogicTest {
 
-    final String message = "{ \"index\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" }\n" +
-            "{ \"type1\" : { \"field1\" : \"value1\" } }\n" +
-            "{ \"delete\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n" +
-            "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" }\n" +
-            "{ \"type1\" : { \"field1\" : \"value1\" } }";
+    final String message = "{ \"index\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" }\n"
+            + "{ \"type1\" : { \"field1\" : \"value1\" } }\n"
+            + "{ \"delete\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"2\" } }\n"
+            + "{ \"create\" : { \"_index\" : \"test\", \"_type\" : \"type1\", \"_id\" : \"1\" }\n"
+            + "{ \"type1\" : { \"field1\" : \"value1\" } }";
 
     JmsQueueSender sender;
     Client client;
@@ -60,8 +61,7 @@ public class WebLogicTest {
     }
 
     private void startElasticSearchInstance() throws IOException {
-        Node node = NodeBuilder.nodeBuilder().settings(
-          	ImmutableSettings.settingsBuilder().put("gateway.type", "none")).node();
+        Node node = NodeBuilder.nodeBuilder().settings(ImmutableSettings.settingsBuilder().put("gateway.type", "none")).node();
         Map<String, String> settings = new HashMap<String, String>();
         settings.put("jndiProviderUrl", "t3://localhost:7001");
         settings.put("jndiContextFactory", "weblogic.jndi.WLInitialContextFactory");
@@ -71,12 +71,7 @@ public class WebLogicTest {
 
         client = node.client();
         client.prepareIndex("_river", "test1", "_meta").setSource(
-        		jsonBuilder()
-        			.startObject()
-        				.field("type", "jms")
-        				.field("jms", settings)
-        			.endObject()
-        		).execute().actionGet();
+                jsonBuilder().startObject().field("type", "jms").field("jms", settings).endObject()).execute().actionGet();
     }
 
     private void stopElasticSearchInstance() {
@@ -85,8 +80,8 @@ public class WebLogicTest {
         client.close();
     }
 
-
     @Test
+    @Ignore
     public void testSimpleScenario() throws Exception {
         startJMSSender();
         startElasticSearchInstance();
@@ -96,16 +91,14 @@ public class WebLogicTest {
             ListenableActionFuture<GetResponse> future = client.prepareGet("test", "type1", "1").execute();
             future.actionGet();
             Assert.fail();
-        } 
-        catch (IndexMissingException idxExcp) {
+        } catch (IndexMissingException idxExcp) {
 
         }
 
         try {
             sender.send(message);
             sender.close();
-        } 
-        catch (JMSException e) {
+        } catch (JMSException e) {
             Assert.fail("JMS Exception");
         }
 
@@ -116,10 +109,10 @@ public class WebLogicTest {
             Object o = future.actionGet();
             GetResponse resp = (GetResponse) o;
             Assert.assertEquals("{ \"type1\" : { \"field1\" : \"value1\" } }", resp.getSourceAsString());
-//            System.out.println("resp.sourceAsString() = " + resp.sourceAsString());
-//            System.out.println("o = " + o);
+            // System.out.println("resp.sourceAsString() = " +
+            // resp.sourceAsString());
+            // System.out.println("o = " + o);
         }
-
 
         stopElasticSearchInstance();
         stopJMSSender();

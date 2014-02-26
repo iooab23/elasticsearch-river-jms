@@ -1,4 +1,0 @@
-
-
-topic.LOGT = LOGT
-connectionFactoryNames = connectionFactory, queueConnectionFactory, topicConnectionFactory	

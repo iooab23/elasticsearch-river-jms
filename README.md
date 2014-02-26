@@ -62,9 +62,9 @@ Alternative for processing messages NOT in api bulk format with default index an
             "bulkSize" : 100,
             "bulkTimeout" : "10ms",
             "ordered" : false,
-            "index" : "myIndex",
-            "type" : "myType",
-            "action" : "index"
+            "_index" : "myIndex",
+            "_type" : "myType",
+            "_action" : "index"
         }
     }'
 
