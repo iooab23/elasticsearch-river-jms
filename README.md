@@ -40,7 +40,34 @@ Creating the JMS river in elasticsearch is as simple as:
 	        "ordered" : false
 	    }
 	}'
+
+Alternative for processing messages NOT in api bulk format with default index and type:
 	
+	curl -XPUT 'localhost:9200/_river/my_river/_meta' -d '
+    {
+        "type" : "jms",
+        "jms" : {
+            "jndiProviderUrl" : "tcp://localhost:61616", 
+            "jndiContextFactory" : "org.apache.activemq.jndi.ActiveMQInitialContextFactory",
+            "user" : "user",
+            "pass" : "password",
+            "connectionFactory" : "topicConnectionFactory",
+            "sourceType" : "topic",
+            "sourceName" : "myTopic",
+            "consumerName" : "elasticsearch",
+            "jmsuser" : "user",
+            "jmspass" : "password"
+        },
+        "index" : {
+            "bulkSize" : 100,
+            "bulkTimeout" : "10ms",
+            "ordered" : false,
+            "index" : "myIndex",
+            "type" : "myType",
+            "action" : "index"
+        }
+    }'
+
 Configuration Settings
 ----------------------
 
@@ -57,6 +84,8 @@ Configuration Settings
 - bulkSize: The maximum batch size (bulk actions) the river will submit to elasticsearch.
 - bulkTimeout: The length of time the river will wait for new messages to add to a batch.
 - ordered: Indicates whether the river should submit the bulk actions in the order it got them from the queue.  This setting can also be used a simple way to throttle indexing.
+- index: Default index to use for messages NOT in api bulk format (leave blank otherwise)
+- type: Default document type to use for messages NOT in api bulk format (leave blank otherwise)
 
 License
 -------
