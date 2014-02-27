@@ -23,7 +23,6 @@
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<includes>
 				<include>org.apache.activemq:activemq-core</include>
-				<include>org.apache.geronimo.specs:geronimo-jms_1.1_spec</include>
 			</includes>
 			<excludes>
 				<exclude>javax.servlet:servlet-api</exclude>
