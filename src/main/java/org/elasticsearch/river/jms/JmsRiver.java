@@ -162,7 +162,9 @@ public class JmsRiver extends AbstractRiverComponent implements River {
             defaultType = XContentMapValues.nodeStringValue(indexSettings.get("_type"), null);
             defaultAction = XContentMapValues.nodeStringValue(indexSettings.get("_action"), null);
 
-            logger.info("Index Setting: Action:{} Index:{} Type:{}", defaultAction, defaultIndex, defaultType);
+            if (defaultAction != null) {
+                logger.info("Index Setting: Action:{} Index:{} Type:{}", defaultAction, defaultIndex, defaultType);
+            }
 
         } else {
             bulkSize = 100;
